@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&display=swap');
+
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-scaleIn { animation: scaleIn 0.25s ease-in-out; }
+
+body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+.inputPremium {
+  @apply w-full border border-gray-300 p-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition duration-200 bg-white;
+}
+
+.sectionTitle {
+  @apply text-lg font-semibold mb-4 text-blue-700;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(62%) sepia(95%) saturate(750%) hue-rotate(355deg) brightness(101%) contrast(101%);
+  cursor: pointer;
+}
+
+/* Provider register glass inputs */
+.glassInput {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #ffffff;
+  outline: none;
+  width: 100%;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+.glassInput::placeholder { color: #cbd5f5; }
+.glassInput:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3);
+}
+select.glassInput option { color: black; }
