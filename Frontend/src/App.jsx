@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 
 import Scroll from "./components/Common/Scroll";
 import Navbar from "./components/Navbar/Navbar";
-import Footer from "./components/common/Footer";
+import Footer from "./components/Common/Footer";
 
 import ProtectedRoute from "./Files/ProtectedRoute";
 import ProtectedAdminRoute from "./Files/ProtectedAdminRoute";
