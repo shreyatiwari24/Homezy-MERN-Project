@@ -52,7 +52,7 @@ const Services = () => {
       if (category) params.append("category", category);
       if (searchQuery) params.append("search", searchQuery);
 
-      /* 🔥 GEO FILTER */
+      /*  GEO FILTER */
       if (
         Array.isArray(location?.coordinates) &&
         location.coordinates.length === 2
@@ -63,7 +63,7 @@ const Services = () => {
         params.append("lng", lng);
       }
 
-      /* 🔥 PINCODE FILTER */
+      /*  PINCODE FILTER */
       else if (location?.pincode) {
         params.append("pincode", location.pincode.trim());
       }
