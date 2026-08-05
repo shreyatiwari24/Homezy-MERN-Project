@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { useState, useEffect, useContext } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaTimes } from "react-icons/fa";
+import { GoogleLogin } from "@react-oauth/google";
 import { AuthContext } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -10,7 +11,7 @@ const CustomerLogin = ({ onClose }) => {
 
   const navigate = useNavigate();
 
-  const { login, register } = useContext(AuthContext);
+  const { login, register, googleLogin } = useContext(AuthContext);
 
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -109,6 +110,30 @@ const CustomerLogin = ({ onClose }) => {
       [e.target.name]: e.target.value
     }));
 
+  };
+
+  // ================= GOOGLE SUCCESS =================
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const result = await googleLogin({
+        credential: credentialResponse.credential,
+        role: "customer"
+      });
+
+      if (!result?.roles?.includes("customer")) {
+        return toast.error("Not registered as customer");
+      }
+
+      toast.success("Login successful");
+      navigate("/", { replace: true });
+      onClose();
+    } catch (err) {
+      toast.error(err.message || "Google Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ================= SUBMIT =================
@@ -242,12 +267,15 @@ const CustomerLogin = ({ onClose }) => {
         {!isRegister && (
 
           <>
-            <button className="w-full flex items-center justify-center gap-3 border p-3 rounded-lg hover:bg-gray-50">
-
-              <FcGoogle size={22} />
-              Continue with Google
-
-            </button>
+            <div className="w-full flex justify-center mb-4">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  toast.error("Google Login failed");
+                }}
+                useOneTap
+              />
+            </div>
 
             <div className="flex items-center my-6">
 

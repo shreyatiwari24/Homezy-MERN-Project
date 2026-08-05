@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`,
 });
 
 API.interceptors.request.use((config) => {
@@ -10,7 +10,7 @@ API.interceptors.request.use((config) => {
     localStorage.getItem("token") ||
     sessionStorage.getItem("token");
 
-  if (token) {
+  if (token && token !== "null" && token !== "undefined") {
     config.headers.Authorization = `Bearer ${token}`;
   }
 

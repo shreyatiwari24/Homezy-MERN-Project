@@ -15,7 +15,7 @@ exports.protect = async (req, res, next) => {
     }
 
     //  No token
-    if (!token) {
+    if (!token || token === "null" || token === "undefined") {
       return res.status(401).json({
         success: false,
         message: "Not authorized, token missing",

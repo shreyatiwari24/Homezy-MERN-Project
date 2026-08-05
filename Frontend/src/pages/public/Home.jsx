@@ -30,7 +30,10 @@ const Home = () => {
 
   return (
     <>
-      <Hero openLogin={() => setShowLogin(true)} />
+      <Hero 
+        openLogin={() => setShowLogin(true)} 
+        openLocation={() => setShowLocationPopup(true)}
+      />
 
       <AboutSection />
       <ServicesSection />

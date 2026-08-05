@@ -1,11 +1,12 @@
 import heroImg from "../../../assets/hero.png";
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { LocationContext } from "../../../context/LocationContext";
 import { toast } from "react-hot-toast";
 
 const Hero = ({ openLogin, openLocation }) => {
+  const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
 
@@ -76,22 +77,30 @@ const Hero = ({ openLogin, openLocation }) => {
         <div className="grid md:grid-cols-4 gap-4 items-center">
 
           <h3 className="text-xl font-bold text-gray-800">
-            Check Service Availability
+            Find a Service
           </h3>
 
           <input
             type="text"
-            placeholder="Zip / Postal Code"
-            className="border p-3 rounded-md"
+            placeholder="e.g. Plumbing, Cleaning..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (!user) { openLogin(); return; }
+                navigate(searchQuery ? `/services?search=${searchQuery}` : "/services");
+              }
+            }}
+            className="border p-3 rounded-md focus:border-orange-500 outline-none"
           />
 
           <input
             type="text"
             placeholder="City or Location"
-            value={user && location ? location.city : ""}
+            value={location ? `${location.area || ""}, ${location.city || ""}`.replace(/^, /, "") : ""}
             readOnly
             onClick={openLocation}
-            className="border p-3 rounded-md cursor-pointer"
+            className="border p-3 rounded-md cursor-pointer outline-none hover:bg-gray-50"
           />
 
           <button
@@ -100,13 +109,15 @@ const Hero = ({ openLogin, openLocation }) => {
                 openLogin();
                 return;
               }
-              openLocation();
-
-              navigate("/services");
+              if (!location) {
+                openLocation();
+                return;
+              }
+              navigate(searchQuery ? `/services?search=${searchQuery}` : "/services");
             }}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-md font-semibold"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-md font-semibold transition"
           >
-            Find Services
+            Search
           </button>
 
         </div>

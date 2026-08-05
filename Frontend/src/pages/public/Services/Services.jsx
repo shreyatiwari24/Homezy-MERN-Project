@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import API from "../../../api/axios";
 import { LocationContext } from "../../../context/LocationContext";
 import LocationModal from "../../../components/location/LocationModal";
+import { getCategoryImage } from "../../../utils/categoryImages";
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -184,15 +185,11 @@ const Services = () => {
 
                 {/* IMAGE */}
                 <div className="relative h-44 bg-gray-800 flex items-center justify-center text-gray-400">
-                  {service.images?.length > 0 ? (
-                    <img
-                      src={service.images[0]}
-                      alt={service.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    "No Image"
-                  )}
+                  <img
+                    src={service.images?.length > 0 ? service.images[0] : getCategoryImage(service.category?.name)}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                  />
 
                   <div className="absolute top-3 right-3 bg-orange-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow">
                     ₹{service.price}

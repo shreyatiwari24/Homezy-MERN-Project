@@ -2,6 +2,7 @@ const Booking = require("../models/Booking");
 const Service = require("../models/Service");
 const { v4: uuidv4 } = require("uuid");
 const Notification = require("../models/notifications");
+const { sendNotificationToUser } = require("../socket");
 
 
 
@@ -43,12 +44,13 @@ exports.createBooking = async (req, res) => {
     });
 
     // CREATE NOTIFICATION HERE
-    await Notification.create({
+    const notification = await Notification.create({
       user: service.provider,
       title: "New Booking",
       message: `You received a new booking for ${service.name}`,
       type: "booking"
     });
+    sendNotificationToUser(service.provider, notification);
 
     res.status(201).json({
       message: "Booking created successfully",
@@ -102,6 +104,14 @@ exports.updateBookingStatus = async (req, res) => {
       { new: true }
     );
 
+    const notification = await Notification.create({
+      user: booking.customer,
+      title: "Booking Update",
+      message: `Your booking status has been updated to ${status}`,
+      type: "booking"
+    });
+    sendNotificationToUser(booking.customer, notification);
+
     res.json({
       message: "Status updated",
       booking: updatedBooking,
@@ -136,6 +146,14 @@ exports.cancelBooking = async (req, res) => {
 
     booking.status = "cancelled";
     await booking.save();
+
+    const notification = await Notification.create({
+      user: booking.provider,
+      title: "Booking Cancelled",
+      message: "A customer has cancelled a pending booking.",
+      type: "booking"
+    });
+    sendNotificationToUser(booking.provider, notification);
 
     res.json({ message: "Booking cancelled successfully" });
 
@@ -184,6 +202,7 @@ exports.getProviderBookings = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 

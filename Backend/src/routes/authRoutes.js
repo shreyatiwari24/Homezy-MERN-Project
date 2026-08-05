@@ -7,7 +7,8 @@ const router = express.Router();
 const {
 registerUser,
 loginUser,
-verifyEmail
+verifyEmail,
+googleLogin
 } = require("../controllers/authController");
 
 
@@ -62,6 +63,13 @@ loginUser
 router.get(
 "/verify-email/:token",
 verifyEmail
+);
+
+/* ---------- GOOGLE LOGIN ---------- */
+
+router.post(
+"/google",
+googleLogin
 );
 
 

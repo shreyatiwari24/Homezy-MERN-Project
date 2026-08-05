@@ -120,6 +120,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ================= GOOGLE LOGIN =================
+
+  const googleLogin = async ({ credential, role }) => {
+    try {
+      const res = await API.post("/auth/google", {
+        credential,
+        role,
+      });
+
+      const { token, user } = res.data;
+
+      if (!token || !user) throw new Error("Invalid login response");
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setUser(user);
+
+      return user;
+
+    } catch (err) {
+      throw new Error(
+        err.response?.data?.message || err.message || "Google Login failed"
+      );
+    }
+  };
+
   // ================= CHANGE PASSWORD (🔥 NEW FIX) =================
 
   const changePassword = async ({ oldPassword, newPassword }) => {
@@ -157,6 +185,7 @@ export const AuthProvider = ({ children }) => {
         user,
         authLoading,
         login,
+        googleLogin,
         register,
         logout,
         updateUser,

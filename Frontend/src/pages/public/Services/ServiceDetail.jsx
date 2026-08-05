@@ -2,33 +2,28 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../../api/axios";
 import { Calendar, Clock, FileText, MapPin, Tag, User, Shield } from "lucide-react";
-
+import { getCategoryImage } from "../../../utils/categoryImages";
 const ServiceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [service, setService]           = useState(null);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState("");
-
   const [bookingDate, setBookingDate]   = useState("");
   const [bookingTime, setBookingTime]   = useState("");
   const [notes, setNotes]               = useState("");
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError]     = useState("");
-
   // ✅ Ref-based lock — prevents double booking even on fast double clicks
   const submittingRef = useRef(false);
   // ✅ Track if already booked this session
   const alreadyBookedRef = useRef(false);
-
   /* ── Fetch service ── */
   useEffect(() => {
     if (!id) return;
     fetchService();
   }, [id]);
-
   const fetchService = async () => {
     try {
       setLoading(true);
@@ -43,58 +38,46 @@ const ServiceDetail = () => {
       setLoading(false);
     }
   };
-
   /* ── Today's date string for min date ── */
   const todayStr = new Date().toISOString().split("T")[0];
-
   /* ── Validate booking inputs ── */
   const validateBooking = () => {
     if (!bookingDate)  return "Please select a date";
     if (!bookingTime)  return "Please select a time";
-
     // prevent past bookings
     const selectedDateTime = new Date(`${bookingDate}T${bookingTime}`);
     const now = new Date();
     if (selectedDateTime <= now) return "Please select a future date and time";
-
     // minimum 1 hour notice
     const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
     if (selectedDateTime < oneHourFromNow) return "Please book at least 1 hour in advance";
-
     return null;
   };
-
   /* ── Handle booking ── */
   const handleBooking = useCallback(async () => {
-
     // ✅ Block 1 — ref lock prevents simultaneous/double clicks
     if (submittingRef.current) return;
-
     // ✅ Block 2 — already booked this session
     if (alreadyBookedRef.current) {
       setBookingError("You have already booked this service.");
       return;
     }
-
     // ✅ Block 3 — check login
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       navigate("/Customer/login");
       return;
     }
-
     // ✅ Block 4 — validate inputs
     const validationError = validateBooking();
     if (validationError) {
       setBookingError(validationError);
       return;
     }
-
     // ✅ Lock submission
     submittingRef.current = true;
     setBookingLoading(true);
     setBookingError("");
-
     try {
       await API.post("/bookings", {
         serviceId:     service._id,
@@ -102,14 +85,12 @@ const ServiceDetail = () => {
         bookingTime,
         notes: notes.trim(),
       });
-
       // ✅ Mark as booked — prevents re-booking
       alreadyBookedRef.current = true;
       setBookingSuccess(true);
       setBookingDate("");
       setBookingTime("");
       setNotes("");
-
     } catch (err) {
       const msg = err.response?.data?.message || "Booking failed. Please try again.";
       setBookingError(msg);
@@ -119,7 +100,6 @@ const ServiceDetail = () => {
       setBookingLoading(false);
     }
   }, [bookingDate, bookingTime, notes, service, navigate]);
-
   /* ── Format location object ── */
   const formatLocation = (loc) => {
     if (!loc) return "Not specified";
@@ -127,7 +107,6 @@ const ServiceDetail = () => {
     const parts = [loc.area, loc.city, loc.pincode].filter(Boolean);
     return parts.length > 0 ? parts.join(", ") : "Not specified";
   };
-
   /* ── States ── */
   if (loading) return (
     <div className="min-h-screen flex justify-center items-center bg-[#080C18]">
@@ -137,7 +116,6 @@ const ServiceDetail = () => {
       </div>
     </div>
   );
-
   if (error) return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-[#080C18] gap-4 px-6">
       <div className="text-5xl">😕</div>
@@ -152,16 +130,13 @@ const ServiceDetail = () => {
       </button>
     </div>
   );
-
   if (!service) return null;
-
   return (
     <section
       className="min-h-screen pt-28 pb-20 px-6 bg-gradient-to-b from-[#080C18] via-[#0D1224] to-[#080C18]"
       
     >
       <div className="max-w-6xl mx-auto">
-
         {/* Back */}
         <button
           onClick={() => navigate(-1)}
@@ -169,12 +144,9 @@ const ServiceDetail = () => {
         >
           ← Back
         </button>
-
         <div className="grid lg:grid-cols-3 gap-8">
-
           {/* ══ LEFT ══ */}
           <div className="lg:col-span-2 space-y-5">
-
             {/* Image */}
             <div className="rounded-2xl overflow-hidden border border-[#1F2D50]">
               {service.images?.length > 0 ? (
@@ -184,13 +156,14 @@ const ServiceDetail = () => {
                   className="w-full h-[340px] object-cover"
                 />
               ) : (
-                <div className="h-[240px] flex flex-col items-center justify-center bg-gradient-to-br from-[#121830] to-[#0D1224] text-[#3D4E70] gap-3">
-                  <div className="text-5xl">🛠</div>
-                  <p className="text-sm">No image available</p>
-                </div>
+             
+                <img
+                  src={getCategoryImage(service.category?.name || service.category)}
+                  alt={service.name}
+                  className="w-full h-[340px] object-cover"
+                />
               )}
             </div>
-
             {/* Title + Price */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#121830] to-[#0D1224] border border-[#1F2D50] rounded-2xl p-6">
               <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-orange-500 via-blue-500 to-transparent" />
@@ -212,7 +185,6 @@ const ServiceDetail = () => {
                 </div>
               </div>
             </div>
-
             {/* Provider */}
             <div className="bg-gradient-to-br from-[#121830] to-[#0D1224] border border-[#1F2D50] rounded-2xl p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center text-white font-black text-lg flex-shrink-0 shadow-lg shadow-orange-500/20">
@@ -225,7 +197,6 @@ const ServiceDetail = () => {
                 </p>
               </div>
             </div>
-
             {/* Description */}
             <div className="bg-gradient-to-br from-[#121830] to-[#0D1224] border border-[#1F2D50] rounded-2xl p-6">
               <h2 className="text-lg font-black text-[#EDF2FF] mb-3" >
@@ -235,7 +206,6 @@ const ServiceDetail = () => {
                 {service.description || "No description provided."}
               </p>
             </div>
-
             {/* Details */}
             <div className="bg-gradient-to-br from-[#121830] to-[#0D1224] border border-[#1F2D50] rounded-2xl p-6 grid grid-cols-2 gap-5">
               {[
@@ -252,21 +222,17 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-
           </div>
-
           {/* ══ RIGHT — Booking Panel ══ */}
           <div className="sticky top-28 h-fit">
             <div className="relative overflow-hidden bg-gradient-to-br from-[#121830] to-[#0D1224] border border-[#1F2D50] rounded-2xl p-6 space-y-5 shadow-2xl shadow-black/40">
               <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-blue-500 via-orange-500 to-transparent" />
-
               <div>
                 <h2 className="text-xl font-black text-[#EDF2FF]" >
                   Book this Service
                 </h2>
                 <p className="text-xs text-[#3D4E70] mt-1">Select your preferred slot</p>
               </div>
-
               {/* ✅ Success state — locks panel */}
               {bookingSuccess ? (
                 <div className="flex flex-col items-center gap-4 py-6 text-center">
@@ -297,7 +263,6 @@ const ServiceDetail = () => {
                       <span>{bookingError}</span>
                     </div>
                   )}
-
                   {/* Date */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-orange-400 flex items-center gap-1.5 uppercase tracking-wider">
@@ -311,7 +276,6 @@ const ServiceDetail = () => {
                       className="w-full bg-[#0D1224] border border-[#1F2D50] text-[#EDF2FF] px-4 py-3 rounded-xl text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all"
                     />
                   </div>
-
                   {/* Time */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-orange-400 flex items-center gap-1.5 uppercase tracking-wider">
@@ -324,7 +288,6 @@ const ServiceDetail = () => {
                       className="w-full bg-[#0D1224] border border-[#1F2D50] text-[#EDF2FF] px-4 py-3 rounded-xl text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all"
                     />
                   </div>
-
                   {/* Notes */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-[#7A8FBA] flex items-center gap-1.5 uppercase tracking-wider">
@@ -339,13 +302,11 @@ const ServiceDetail = () => {
                       className="w-full bg-[#0D1224] border border-[#1F2D50] text-[#EDF2FF] placeholder-[#3D4E70] px-4 py-3 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
                     />
                   </div>
-
                   {/* Price summary */}
                   <div className="flex justify-between items-center py-3 border-t border-[#1F2D50]">
                     <span className="text-sm text-[#7A8FBA]">Total</span>
                     <span className="text-xl font-black text-orange-400">₹{service.price}</span>
                   </div>
-
                   {/* ✅ Book button — disabled during loading */}
                   <button
                     onClick={handleBooking}
@@ -359,7 +320,6 @@ const ServiceDetail = () => {
                       </span>
                     ) : "Confirm Booking →"}
                   </button>
-
                   {/* Trust badge */}
                   <div className="flex items-center justify-center gap-2 text-xs text-[#3D4E70]">
                     <Shield className="w-3.5 h-3.5 text-green-500" />
@@ -369,11 +329,9 @@ const ServiceDetail = () => {
               )}
             </div>
           </div>
-
         </div>
       </div>
     </section>
   );
 };
-
 export default ServiceDetail;

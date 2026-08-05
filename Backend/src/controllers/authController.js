@@ -22,16 +22,29 @@ const sendVerificationEmail = async (user) => {
   try {
     const rawToken = crypto.randomBytes(32).toString("hex");
 
-    user.emailVerificationToken = crypto
+    const hashedToken = crypto
       .createHash("sha256")
       .update(rawToken)
       .digest("hex");
 
-    user.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000;
+    const expireTime = Date.now() + 24 * 60 * 60 * 1000;
 
-    await user.save();
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          emailVerificationToken: hashedToken,
+          emailVerificationExpire: expireTime,
+        },
+      }
+    );
 
-    const verifyURL = `${process.env.SERVER_URL}/api/auth/verify-email/${rawToken}`;
+    const verifyURL = `${process.env.SERVER_URL || "http://localhost:5000"}/api/auth/verify-email/${rawToken}`;
+
+    console.log(`\n\n================================`);
+    console.log(`🔗 VERIFICATION LINK FOR ${user.email}:`);
+    console.log(verifyURL);
+    console.log(`================================\n\n`);
 
     const html = `
       <h2>Email Verification — Homezy</h2>
@@ -219,10 +232,14 @@ exports.loginUser = async (req, res) => {
     }).select("+password"); //  REQUIRED
 
     if (!user) {
+      console.log(`Login failed: User not found for email ${normalizedEmail}`);
       return res.status(401).json({ message: "Invalid credentials" });
     }
+    console.log("Entered password:", password);
+console.log("Stored hash:", user.password);
 
     const isMatch = await user.comparePassword(password);
+    console.log(`Login attempt for ${normalizedEmail}: password match = ${isMatch}`);
 
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -319,13 +336,80 @@ exports.verifyEmail = async (req, res) => {
 
     return res.redirect(
       isProvider
-        ? `${process.env.CLIENT_URL}/email-verified?role=provider`
-        : `${process.env.CLIENT_URL}/email-verified`
+        ? `${process.env.CLIENT_URL || "http://localhost:5173"}/email-verified?role=provider`
+        : `${process.env.CLIENT_URL || "http://localhost:5173"}/email-verified`
     );
 
   } catch (error) {
     console.error("VERIFY ERROR:", error);
 
     return res.status(500).send("Verification failed");
+  }
+};
+
+/* =====================================================
+   GOOGLE LOGIN
+===================================================== */
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID");
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const { credential, role } = req.body;
+    const requestedRole = role === "provider" ? "provider" : "customer";
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID",
+    });
+    
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    let user = await User.findOne({ email: normalizedEmail }).select("+password");
+
+    if (user) {
+      if (!user.roles.includes(requestedRole)) {
+        user.roles.push(requestedRole);
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        name,
+        email: normalizedEmail,
+        password: crypto.randomBytes(16).toString("hex"), // Dummy password
+        roles: [requestedRole],
+        emailVerified: true,
+        profileImage: picture,
+        isApproved: requestedRole === "customer" ? true : false,
+      });
+    }
+
+    if (requestedRole === "provider" && !user.isApproved && !user.isRejected) {
+       return res.status(403).json({
+          message: "Application under review",
+       });
+    }
+
+    const token = generateToken(user);
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        isApproved: user.isApproved,
+        profileImage: user.profileImage,
+      },
+    });
+
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+    return res.status(500).json({
+      message: error.message || "Server error during Google login",
+    });
   }
 };

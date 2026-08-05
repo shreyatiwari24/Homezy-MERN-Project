@@ -138,7 +138,7 @@ userSchema.index({ roles: 1 });
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-
+  console.log(`Hashing password for ${this.email}...`);
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
