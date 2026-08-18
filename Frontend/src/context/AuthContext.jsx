@@ -79,9 +79,11 @@ export const AuthProvider = ({ children }) => {
       return res.data;
 
     } catch (err) {
-      throw new Error(
-        err.response?.data?.message || "Registration failed"
-      );
+      const data = err.response?.data;
+      const message = data?.message
+        || data?.errors?.map(e => e.msg).join(", ")
+        || "Registration failed";
+      throw new Error(message);
     }
   };
 
@@ -114,9 +116,11 @@ export const AuthProvider = ({ children }) => {
       return user;
 
     } catch (err) {
-      throw new Error(
-        err.response?.data?.message || err.message || "Login failed"
-      );
+      const data = err.response?.data;
+      const message = data?.message
+        || data?.errors?.map(e => e.msg).join(", ")
+        || err.message || "Login failed";
+      throw new Error(message);
     }
   };
 
@@ -142,9 +146,11 @@ export const AuthProvider = ({ children }) => {
       return user;
 
     } catch (err) {
-      throw new Error(
-        err.response?.data?.message || err.message || "Google Login failed"
-      );
+      const data = err.response?.data;
+      const message = data?.message
+        || data?.errors?.map(e => e.msg).join(", ")
+        || err.message || "Google Login failed";
+      throw new Error(message);
     }
   };
 

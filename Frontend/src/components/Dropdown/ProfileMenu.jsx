@@ -77,7 +77,7 @@ const ProfileMenu = () => {
           <div className="px-4 py-3 border-b">
             <p className="font-semibold">{user?.name}</p>
             <p className="text-sm text-gray-500 capitalize">
-              {roles.join(", ")}
+              {isProvider ? "Provider" : "Customer"}
             </p>
           </div>
 
@@ -108,5 +108,6 @@ const ProfileMenu = () => {
 };
 
 export default ProfileMenu;
+
 
 

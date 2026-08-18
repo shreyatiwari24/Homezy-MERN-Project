@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { toast } from "react-hot-toast";
 
 const AdminLogin = () => {
   const { login } = useContext(AuthContext);
@@ -34,13 +35,14 @@ const AdminLogin = () => {
     });
 
     if (user.roles?.includes("admin")) {
+      toast.success("Login successful");
       navigate("/admin/dashboard", { replace: true });
     } else {
-      alert("Access denied");
+      toast.error("Access denied");
     }
 
   } catch (err) {
-    alert(err.message || "Login failed");
+    toast.error(err.message || "Login failed");
   } finally {
     setLoading(false);
   }

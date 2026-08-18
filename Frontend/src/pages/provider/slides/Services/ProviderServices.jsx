@@ -103,18 +103,18 @@ const ProviderServices = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
       {/* HERO */}
-      <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-600 text-white">
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-r from-orange-400 via-blue-400 to-blue-500 text-white shadow-sm">
         <div className="relative flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">My Services</h1>
-            <p className="text-blue-200 text-sm">
+            <p className="text-white/80 text-sm mt-1">
               Manage your listed services
             </p>
           </div>
 
           <button
             onClick={() => navigate("/provider/services/create")}
-            className="bg-white text-indigo-600 px-5 py-2 rounded-xl font-semibold"
+            className="bg-white text-orange-500 px-5 py-2.5 rounded-xl font-bold hover:bg-orange-50 transition-colors shadow-sm"
           >
             + Create
           </button>
@@ -135,11 +135,11 @@ const ProviderServices = () => {
           <button
             key={status}
             onClick={() => setFilter(status)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize border
+            className={`px-5 py-2 rounded-xl text-sm font-semibold capitalize border transition-all duration-200
               ${
                 filter === status
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white text-slate-600 border-slate-200"
+                  ? "bg-gradient-to-r from-orange-500 to-blue-500 text-white border-transparent shadow-sm"
+                  : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
               }`}
           >
             {status}

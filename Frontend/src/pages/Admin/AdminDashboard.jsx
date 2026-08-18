@@ -146,13 +146,13 @@ export default function AdminDashboard() {
   const [loading, setLoading]     = useState(true);
   const [acting, setActing]       = useState(null);
   const [tab, setTab]             = useState("overview");
-  const [toast, setToast]         = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => { fetchAll(); }, []);
 
   const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3200);
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3200);
   };
 
   const fetchAll = async () => {
@@ -264,10 +264,10 @@ export default function AdminDashboard() {
       <main className="flex-1 overflow-y-auto max-h-screen px-10 py-9">
 
         {/* Toast */}
-        {toast && (
+        {notification && (
           <div className={`fixed top-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm text-white shadow-2xl border-l-4 border-white/30 animate-bounce-in
-            ${toast.type === "success" ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}>
-            {toast.type === "success" ? "✓" : "✕"} {toast.msg}
+            ${notification.type === "success" ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}>
+            {notification.type === "success" ? "✓" : "✕"} {notification.msg}
           </div>
         )}
 
